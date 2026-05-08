@@ -1,0 +1,8 @@
+{
+  "gui.deathmemo.pos": "Coordinates:",
+  "gui.deathmemo.armor": "Armor: ",
+  "gui.deathmemo.offhand": "Offhand: ",
+  "gui.deathmemo.snapshot": "Snapshot",
+  "gui.deathmemo.exit": "Exit",
+  "gui.deathmemo.empty": "Nothing here"
+}
