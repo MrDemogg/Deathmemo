@@ -67,8 +67,8 @@ public class Utils {
         return hash;
     }
 
-    public static String getOwoExampleName(String screenId, String exampleId)
+    public static String getOwoExampleName(String xmlId, String exampleId)
     {
-        return exampleId + "@" + Deathmemo.MODID + ":" + screenId;
+        return exampleId + "@" + Deathmemo.MODID + ":" + xmlId;
     }
 }

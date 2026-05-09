@@ -1,8 +1,11 @@
-package co.AronHuisIn.deathmemo.UI;
+package co.AronHuisIn.deathmemo.UI.Screens;
 
 import co.AronHuisIn.deathmemo.Data.InventoriesDataManager;
 import co.AronHuisIn.deathmemo.Data.InventorySnapshot;
 import co.AronHuisIn.deathmemo.Deathmemo;
+import co.AronHuisIn.deathmemo.UI.UIKeys;
+import co.AronHuisIn.deathmemo.UI.templates.FlatButtonTemplate;
+import co.AronHuisIn.deathmemo.UI.templates.SlotTemplate;
 import io.wispforest.owo.ui.base.BaseUIModelScreen;
 import io.wispforest.owo.ui.component.Components;
 import io.wispforest.owo.ui.component.ItemComponent;
@@ -13,6 +16,7 @@ import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.container.GridLayout;
 import io.wispforest.owo.ui.core.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -21,11 +25,14 @@ import org.joml.Vector3i;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
     private final List<ItemComponent> armorSlots = new ArrayList<>();
     private final List<ItemComponent> itemSlots = new ArrayList<>();
     private ItemComponent offhandSlot;
+
+    private final List<ItemComponent> allSlots = new ArrayList<>();
 
     private FlowLayout openedDate;
     private LabelComponent posXLabel;
@@ -38,10 +45,24 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
     }
 
     @Override
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        super.render(context, mouseX, mouseY, delta);
+
+        for (ItemComponent item : allSlots)
+        {
+            if (Objects.equals(item.id(), UIKeys.SnapshotsHistory.Examples.ItemSlot.HOVERED_ITEM))
+            {
+                ItemStack stack = item.stack();
+                if (!stack.isEmpty()) context.renderTooltip(this.font, stack, mouseX, mouseY);
+                break;
+            }
+        }
+    }
+
+    @Override
     protected void build(FlowLayout rootLayout) {
         scrollEmptyLabel = rootLayout.childById(LabelComponent.class, UIKeys.SnapshotsHistory.SCROLL_EMPTY);
-
-        FlowLayout closeBtn = UITemplates.flatButtonTemplate(this.model, Component.translatable("gui.deathmemo.exit").toString());
+        FlowLayout closeBtn = FlatButtonTemplate.create(this.model, Component.translatable("gui.deathmemo.exit").toString());
         closeBtn.surface(Surface.BLANK);
         closeBtn.sizing(Sizing.fixed(60), Sizing.fixed(20));
         closeBtn.childById(LabelComponent.class, UIKeys.SnapshotsHistory.Examples.FlatButton.BUTTON_TEXT).text(Component.translatable("gui.deathmemo.exit"));
@@ -63,13 +84,13 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
         {
             String date = dateTime.split("_")[0];
             String time = dateTime.split("_")[1];
-            FlowLayout flatButton = UITemplates.flatButtonTemplate(this.model, "");
+            FlowLayout flatButton = FlatButtonTemplate.create(this.model, "");
 
             FlowLayout horizontalLayout = Containers.horizontalFlow(Sizing.fill(), Sizing.fill());
             horizontalLayout.positioning(Positioning.absolute(0,0));
             flatButton.child(horizontalLayout);
 
-            FlowLayout verticalLayout = Containers.verticalFlow(Sizing.fill(80), Sizing.fill());
+            FlowLayout verticalLayout = Containers.verticalFlow(Sizing.expand(100), Sizing.fill());
             verticalLayout.padding(Insets.of(5));
             horizontalLayout.child(verticalLayout);
             verticalLayout.child(Components.label(Component.literal(date)));
@@ -82,7 +103,7 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
                         return true;
                     });
 
-            FlowLayout deleteButton = UITemplates.flatButtonTemplate(this.model, "");
+            FlowLayout deleteButton = FlatButtonTemplate.create(this.model, "");
             deleteButton.sizing(Sizing.fixed(30), Sizing.fixed(30));
             deleteButton.alignment(HorizontalAlignment.RIGHT, deleteButton.verticalAlignment());
 
@@ -116,23 +137,32 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
 
         GridLayout armorGrid = rootLayout.childById(GridLayout.class, UIKeys.SnapshotsHistory.ARMOR);
         GridLayout itemsGrid = rootLayout.childById(GridLayout.class, UIKeys.SnapshotsHistory.ITEMS);
-        offhandSlot = rootLayout
+
+        FlowLayout offhand = SlotTemplate.create(this.model);
+        rootLayout
                 .childById(FlowLayout.class, UIKeys.SnapshotsHistory.OFFHAND)
-                .childById(ItemComponent.class, UIKeys.SnapshotsHistory.Examples.ItemSlot.ITEM);
+                .child(offhand);
+
+        offhandSlot = offhand.childById(ItemComponent.class, UIKeys.SnapshotsHistory.Examples.ItemSlot.ITEM);
 
         for (int c = 0; c < 4; c++) {
-            FlowLayout slotLayout = UITemplates.slotTemplate(this.model);
+            FlowLayout slotLayout = SlotTemplate.create(this.model);
             armorSlots.add(slotLayout.childById(ItemComponent.class, UIKeys.SnapshotsHistory.Examples.ItemSlot.ITEM));
             armorGrid.child(slotLayout, 0, c);
         }
 
         for (int row = 0; row < 4; row++) {
             for (int col = 8; col >= 0; col--) {
-                FlowLayout slotLayout = UITemplates.slotTemplate(this.model);
-                itemSlots.add(slotLayout.childById(ItemComponent.class, UIKeys.SnapshotsHistory.Examples.ItemSlot.ITEM));
+                FlowLayout slotLayout = SlotTemplate.create(this.model);
+                ItemComponent itemComponent = slotLayout.childById(ItemComponent.class, UIKeys.SnapshotsHistory.Examples.ItemSlot.ITEM);
+                itemSlots.add(itemComponent);
                 itemsGrid.child(slotLayout, row, col);
             }
         }
+
+        allSlots.addAll(armorSlots);
+        allSlots.addAll(itemSlots);
+        allSlots.add(offhandSlot);
 
         updateSlots(null);
     }
@@ -167,30 +197,59 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
 
     private void updateSlots(InventorySnapshot snapshot)
     {
-        if (snapshot == null)
-        {
-            if (InventoriesDataManager.getInstance().getSnapshots().isEmpty())
-                scrollEmptyLabel.text(Component.translatable("gui.deathmemo.empty"));
-
-            setPosLabels(null);
-            offhandSlot.stack(ItemStack.EMPTY);
-            for (ItemComponent slot : armorSlots) slot.stack(ItemStack.EMPTY);
-            for (ItemComponent slot : itemSlots) slot.stack(ItemStack.EMPTY);
+        if (snapshot == null) {
+            handleEmptyState();
             return;
         }
 
+        handleSnapshotState(snapshot);
+    }
+
+    private void handleSnapshotState(InventorySnapshot snapshot) {
         scrollEmptyLabel.text(Component.empty());
 
         setPosLabels(snapshot.pos);
+        updateOffhand(snapshot);
+        updateArmor(snapshot);
+        updateItems(snapshot);
+    }
 
-        offhandSlot.stack(snapshot.offhand.isEmpty() ? ItemStack.EMPTY : snapshot.offhand.getFirst());
+    private void updateOffhand(InventorySnapshot snapshot) {
+        offhandSlot.stack(
+                snapshot.offhand.isEmpty()
+                        ? ItemStack.EMPTY
+                        : snapshot.offhand.getFirst()
+        );
+    }
 
+    private void updateArmor(InventorySnapshot snapshot) {
         for (int i = 0; i < armorSlots.size() && i < snapshot.armor.size(); i++) {
             armorSlots.get(i).stack(snapshot.armor.get(i));
         }
+    }
 
+    private void updateItems(InventorySnapshot snapshot) {
         for (int i = 0; i < itemSlots.size() && i < snapshot.items.size(); i++) {
-            itemSlots.get(i).stack(snapshot.items.get(snapshot.items.size() - i - 1));
+            ItemStack stack = snapshot.items.get(snapshot.items.size() - i - 1);
+            itemSlots.get(i).stack(stack);
+        }
+    }
+
+    private void handleEmptyState() {
+        if (InventoriesDataManager.getInstance().getSnapshots().isEmpty()) {
+            scrollEmptyLabel.text(Component.translatable("gui.deathmemo.empty"));
+        }
+
+        setPosLabels(null);
+        offhandSlot.stack(ItemStack.EMPTY);
+
+        clearSlots(armorSlots);
+        clearSlots(itemSlots);
+    }
+
+    private void clearSlots(List<ItemComponent> slots) {
+        for (ItemComponent slot : slots) {
+            slot.stack(ItemStack.EMPTY);
         }
     }
 }

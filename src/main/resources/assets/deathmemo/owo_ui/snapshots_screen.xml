@@ -135,17 +135,15 @@
                                                 </flow-layout>
 
                                                 <!-- Вторая рука -->
-                                                <flow-layout direction="vertical" id="offhand">
+                                                <flow-layout direction="vertical">
                                                     <children>
                                                         <label>
                                                             <text translate="true">gui.deathmemo.offhand</text>
                                                             <color>#EAEAEA</color>
                                                             <vertical-text-alignment>center</vertical-text-alignment>
                                                         </label>
-                                                        <flow-layout direction="horizontal">
-                                                            <children>
-                                                                <template name="itemSlot"/>
-                                                            </children>
+                                                        <flow-layout direction="horizontal" id="offhand">
+                                                            <children/>
                                                             <horizontal-alignment>center</horizontal-alignment>
                                                             <sizing>
                                                                 <vertical method="fixed">18</vertical>
@@ -224,7 +222,7 @@
                     </sprite>
                     <item id="item">
                         <positioning type="absolute">1,1</positioning>
-                        <set-tooltip-from-stack>true</set-tooltip-from-stack>
+                        <set-tooltip-from-stack>false</set-tooltip-from-stack>
                         <sizing>
                             <vertical method="fixed">16</vertical>
                             <horizontal method="fixed">16</horizontal>

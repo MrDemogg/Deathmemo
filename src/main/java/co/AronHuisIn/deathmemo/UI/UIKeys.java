@@ -26,6 +26,7 @@ public final class UIKeys {
 
                 public static final String EXAMPLE_NAME = "itemSlot";
                 public static final String ITEM = "item";
+                public static final String HOVERED_ITEM = "hovered-item";
             }
 
             public static final class FlatButton

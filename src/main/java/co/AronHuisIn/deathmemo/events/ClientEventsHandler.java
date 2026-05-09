@@ -1,10 +1,14 @@
-package co.AronHuisIn.deathmemo;
+package co.AronHuisIn.deathmemo.events;
 
 import co.AronHuisIn.deathmemo.Data.InventoriesDataManager;
 import co.AronHuisIn.deathmemo.Data.InventorySnapshot;
-import co.AronHuisIn.deathmemo.UI.SnapshotsHistoryScreen;
-import co.AronHuisIn.deathmemo.UI.UITemplates;
+import co.AronHuisIn.deathmemo.Deathmemo;
+import co.AronHuisIn.deathmemo.UI.Screens.SnapshotsHistoryScreen;
+import co.AronHuisIn.deathmemo.UI.Toasts.ColoredNotificationToast;
 import co.AronHuisIn.deathmemo.UI.UIKeys;
+import co.AronHuisIn.deathmemo.UI.templates.FlatButtonTemplate;
+import co.AronHuisIn.deathmemo.Utils;
+import co.AronHuisIn.deathmemo.packets.RequestItemResponsePayload;
 import io.wispforest.owo.ui.component.Components;
 import io.wispforest.owo.ui.component.TextureComponent;
 import io.wispforest.owo.ui.container.Containers;
@@ -23,19 +27,21 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.joml.Vector3i;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-@EventBusSubscriber(modid = Deathmemo.MODID)
-public class EventsHandler {
+@EventBusSubscriber(modid = Deathmemo.MODID, value= Dist.CLIENT)
+public class ClientEventsHandler {
     private static InventorySnapshot lastInventorySnapshot = null;
     private static final int SNAPSHOT_UPDATE_TICKS_PERIOD = 10;
     private static int ticksSinceLastSnapshotUpdate = SNAPSHOT_UPDATE_TICKS_PERIOD;
@@ -71,7 +77,7 @@ public class EventsHandler {
                         return;
                     }
 
-                    FlowLayout snapshotHistoryBtn = UITemplates.flatButtonTemplate(model, "");
+                    FlowLayout snapshotHistoryBtn = FlatButtonTemplate.create(model, "");
 
                     Surface btnSurface = snapshotHistoryBtn.surface();
                     Surface btnSurfaceOutline = btnSurface.and(Surface.outline(0xFFFFFFFF));
@@ -152,5 +158,17 @@ public class EventsHandler {
             InventoriesDataManager.getInstance().addSnapshot(lastInventorySnapshot);
             lastInventorySnapshot = null;
         }
+    }
+
+    public static void handleRequestItemResponse(final RequestItemResponsePayload payload, final IPayloadContext context)
+    {
+        context.enqueueWork(() -> Minecraft.getInstance().getToasts().addToast(
+                new ColoredNotificationToast(
+                        Component.translatable(payload.message()),
+                        0xFF1D1D1D,
+                        payload.approved() ? 0xFF80FF80 : 0xFFFF8080,
+                        2000
+                )
+        ));
     }
 }

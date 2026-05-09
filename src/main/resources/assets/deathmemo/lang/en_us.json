@@ -4,5 +4,6 @@
   "gui.deathmemo.offhand": "Offhand: ",
   "gui.deathmemo.snapshot": "Snapshot",
   "gui.deathmemo.exit": "Exit",
-  "gui.deathmemo.empty": "Nothing here"
+  "gui.deathmemo.empty": "Nothing here",
+  "gui.deathmemo.server.give_approve": "Item issued: %s x%s"
 }
