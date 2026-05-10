@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -36,35 +35,6 @@ public class Utils {
         }
 
         return copyStacks;
-    }
-
-    public static long calculateInventoryHash(Inventory inventory) {
-        List<ItemStack> inventoryItems = new ArrayList<>();
-        inventoryItems.addAll(inventory.items);
-        inventoryItems.addAll(inventory.offhand);
-        inventoryItems.addAll(inventory.armor);
-        return calculateInventoryHash(inventoryItems);
-    }
-
-    public static long calculateInventoryHash(List<ItemStack> inventoryItems) {
-        long hash = 1L;
-
-        for (int slot = 0; slot < inventoryItems.size(); slot++) {
-            ItemStack stack = inventoryItems.get(slot);
-
-            hash = 31 * hash + slot;
-
-            if (stack.isEmpty()) {
-                hash = 31 * hash;
-                continue;
-            }
-
-            hash = 31 * hash + net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(stack.getItem());
-            hash = 31 * hash + stack.getCount();
-            hash = 31 * hash + stack.getDamageValue();
-        }
-
-        return hash;
     }
 
     public static String getOwoExampleName(String xmlId, String exampleId)

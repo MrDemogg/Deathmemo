@@ -5,5 +5,9 @@
   "gui.deathmemo.snapshot": "Снимок",
   "gui.deathmemo.exit": "Выход",
   "gui.deathmemo.empty": "Ничего нет",
-  "gui.deathmemo.server.give_approve": "Выдан предмет: %s x%s"
+  "gui.deathmemo.server.give_approve": "Выдан предмет: %s x%s",
+  "gui.deathmemo.server.command_approve": "Команда выполнена",
+  "gui.deathmemo.server.no_perm": "Недостаточно прав",
+  "gui.deathmemo.recovery": "Восстановить",
+  "gui.deathmemo.title": "Снимки смертей"
 }

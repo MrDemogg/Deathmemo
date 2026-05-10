@@ -18,15 +18,18 @@ public final class SlotTemplate{
                 FlowLayout.class,
                 Utils.getOwoExampleName(
                         UIKeys.SnapshotsHistory.SCREEN_ID,
-                        UIKeys.SnapshotsHistory.Examples.ItemSlot.EXAMPLE_NAME
+                        UIKeys.SnapshotsHistory.Templates.ItemSlot.TEMPLATE_NAME
                 ),
                 Map.of()
         );
 
-        ItemComponent item = slot.childById(ItemComponent.class, UIKeys.SnapshotsHistory.Examples.ItemSlot.ITEM);
+        ItemComponent item = slot.childById(ItemComponent.class, UIKeys.SnapshotsHistory.Templates.ItemSlot.ITEM);
 
-        item.mouseEnter().subscribe(() -> item.id(UIKeys.SnapshotsHistory.Examples.ItemSlot.HOVERED_ITEM));
-        item.mouseLeave().subscribe(() -> item.id(UIKeys.SnapshotsHistory.Examples.ItemSlot.ITEM));
+        item.mouseEnter().subscribe(() -> {
+            item.id(UIKeys.SnapshotsHistory.Templates.ItemSlot.HOVERED_ITEM);
+
+        });
+        item.mouseLeave().subscribe(() -> item.id(UIKeys.SnapshotsHistory.Templates.ItemSlot.ITEM));
         slot.mouseDown().subscribe((x,y,mouse) -> {
             handleSlotClick(mouse, item.stack());
             return true;

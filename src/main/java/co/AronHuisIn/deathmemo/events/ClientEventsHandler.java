@@ -7,8 +7,7 @@ import co.AronHuisIn.deathmemo.UI.Screens.SnapshotsHistoryScreen;
 import co.AronHuisIn.deathmemo.UI.Toasts.ColoredNotificationToast;
 import co.AronHuisIn.deathmemo.UI.UIKeys;
 import co.AronHuisIn.deathmemo.UI.templates.FlatButtonTemplate;
-import co.AronHuisIn.deathmemo.Utils;
-import co.AronHuisIn.deathmemo.packets.RequestItemResponsePayload;
+import co.AronHuisIn.deathmemo.packets.RequestResponsePayload;
 import io.wispforest.owo.ui.component.Components;
 import io.wispforest.owo.ui.component.TextureComponent;
 import io.wispforest.owo.ui.container.Containers;
@@ -23,18 +22,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.joml.Vector3i;
 
 import java.time.LocalDateTime;
@@ -42,15 +41,12 @@ import java.time.format.DateTimeFormatter;
 
 @EventBusSubscriber(modid = Deathmemo.MODID, value= Dist.CLIENT)
 public class ClientEventsHandler {
-    private static InventorySnapshot lastInventorySnapshot = null;
-    private static final int SNAPSHOT_UPDATE_TICKS_PERIOD = 10;
-    private static int ticksSinceLastSnapshotUpdate = SNAPSHOT_UPDATE_TICKS_PERIOD;
 
     private static String getPlaceName()
     {
         Minecraft mc = Minecraft.getInstance();
 
-        if (mc.getCurrentServer() != null) return mc.getCurrentServer().name + "(" + mc.getCurrentServer().ip + ")";
+        if (mc.getCurrentServer() != null) return "server_" + mc.getCurrentServer().ip.replace(":", "_").replace(".", "_");
         else if (mc.getSingleplayerServer() != null) return mc.getSingleplayerServer()
                 .getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)
                 .getParent()
@@ -61,11 +57,19 @@ public class ClientEventsHandler {
     }
 
     @SubscribeEvent
-    public static void onClientSetup(FMLClientSetupEvent event) {
-        // Some client setup code
-        Deathmemo.LOGGER.info("HELLO FROM CLIENT SETUP");
-        Deathmemo.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+    public static void registerPayloads(RegisterPayloadHandlersEvent event)
+    {
+        PayloadRegistrar registrar = event.registrar("1").optional();
 
+        registrar.playToClient(
+                RequestResponsePayload.TYPE,
+                RequestResponsePayload.STREAM_CODEC,
+                ClientEventsHandler::handleRequestItemResponse
+        );
+    }
+
+    @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent event) {
         Layers.add(
                 Containers::verticalFlow,
                 instance -> {
@@ -77,10 +81,7 @@ public class ClientEventsHandler {
                         return;
                     }
 
-                    FlowLayout snapshotHistoryBtn = FlatButtonTemplate.create(model, "");
-
-                    Surface btnSurface = snapshotHistoryBtn.surface();
-                    Surface btnSurfaceOutline = btnSurface.and(Surface.outline(0xFFFFFFFF));
+                    FlowLayout snapshotHistoryBtn = FlatButtonTemplate.create(model, "", Surface.outline(0xFFFFFFFF));
 
                     snapshotHistoryBtn.sizing(Sizing.fixed(20), Sizing.fixed(20));
 
@@ -91,11 +92,6 @@ public class ClientEventsHandler {
                     );
 
                     snapshotHistoryBtn.child(texture);
-
-                    texture.mouseEnter().subscribe(() ->
-                            snapshotHistoryBtn.surface(btnSurfaceOutline));
-                    texture.mouseLeave().subscribe(() ->
-                            snapshotHistoryBtn.surface(btnSurface));
                     snapshotHistoryBtn.mouseDown().subscribe((x, y, mouse) ->
                     {
                         Minecraft.getInstance().setScreen(new SnapshotsHistoryScreen());
@@ -122,49 +118,33 @@ public class ClientEventsHandler {
     }
 
     @SubscribeEvent
-    public static void onPlayerTickPost(PlayerTickEvent.Post event) {
-        Player player = event.getEntity();
-        if (player.getHealth() <= 0 || !player.level().isClientSide()) return;
-
-        ticksSinceLastSnapshotUpdate++;
-
-        if (ticksSinceLastSnapshotUpdate < SNAPSHOT_UPDATE_TICKS_PERIOD) return;
-
-        ticksSinceLastSnapshotUpdate = 0;
-
-        Inventory inventory = player.getInventory();
-        if (inventory.isEmpty()
-            || (lastInventorySnapshot != null
-            && Utils.calculateInventoryHash(inventory) == Utils.calculateInventoryHash(lastInventorySnapshot.allStacks())))
-            return;
-
-        String place = getPlaceName();
-
-        if (place == null) return;
-
-        lastInventorySnapshot = new InventorySnapshot(
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")),
-                place,
-                new Vector3i(player.getBlockX(), player.getBlockY(), player.getBlockZ()),
-                inventory,
-                InventoriesDataManager.getInstance().registryAccess
-        );
-    }
-
-    @SubscribeEvent
     public static void onScreenOpen(ScreenEvent.Opening event)
     {
-        if (event.getScreen() instanceof DeathScreen && lastInventorySnapshot != null) {
-            InventoriesDataManager.getInstance().addSnapshot(lastInventorySnapshot);
-            lastInventorySnapshot = null;
+        if (event.getScreen() instanceof DeathScreen) {
+            Minecraft mc = Minecraft.getInstance();
+            LocalPlayer player = mc.player;
+
+            if (player == null || (player.getInventory().isEmpty() && player.totalExperience == 0)) return;
+
+            InventoriesDataManager.getInstance().addSnapshot(
+                    new InventorySnapshot(
+                            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")),
+                            getPlaceName(),
+                            new Vector3i(player.getBlockX(), player.getBlockY(), player.getBlockZ()),
+                            player.level().dimension().location().toString(),
+                            player.totalExperience,
+                            player.getInventory(),
+                            InventoriesDataManager.getInstance().registryAccess
+                    )
+            );
         }
     }
 
-    public static void handleRequestItemResponse(final RequestItemResponsePayload payload, final IPayloadContext context)
+    public static void handleRequestItemResponse(final RequestResponsePayload payload, final IPayloadContext context)
     {
         context.enqueueWork(() -> Minecraft.getInstance().getToasts().addToast(
                 new ColoredNotificationToast(
-                        Component.translatable(payload.message()),
+                        payload.message(),
                         0xFF1D1D1D,
                         payload.approved() ? 0xFF80FF80 : 0xFFFF8080,
                         2000

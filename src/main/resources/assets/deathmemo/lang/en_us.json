@@ -5,5 +5,9 @@
   "gui.deathmemo.snapshot": "Snapshot",
   "gui.deathmemo.exit": "Exit",
   "gui.deathmemo.empty": "Nothing here",
-  "gui.deathmemo.server.give_approve": "Item issued: %s x%s"
+  "gui.deathmemo.server.give_approve": "Item issued: %s x%s",
+  "gui.deathmemo.server.command_approve": "Command completed",
+  "gui.deathmemo.server.no_perm": "No permission",
+  "gui.deathmemo.recovery": "Recovery",
+  "gui.deathmemo.title": "Death snapshots"
 }

@@ -19,6 +19,8 @@ public class InventorySnapshot {
     public String dateTime;
     public String place;
     public Vector3i pos;
+    public String dimension;
+    public int xp;
 
     public List<ItemStack> items;
     public List<ItemStack> offhand;
@@ -32,11 +34,13 @@ public class InventorySnapshot {
         return all;
     }
 
-    public InventorySnapshot(String dateTime, String placeName, Vector3i pos, Inventory inventory, RegistryAccess registryAccess) {
+    public InventorySnapshot(String dateTime, String placeName, Vector3i pos, String dimension, int xp, Inventory inventory, RegistryAccess registryAccess) {
         this.dateTime = dateTime;
         this.place = placeName;
         this.pos = pos;
         this.registryAccess = registryAccess;
+        this.dimension = dimension;
+        this.xp = xp;
 
         items = Utils.copyItemStacks(inventory.items);
         offhand = Utils.copyItemStacks(inventory.offhand);
@@ -53,6 +57,8 @@ public class InventorySnapshot {
         dateTime = snapshotJson.get(JsonDataKeys.DATE_TIME).getAsString();
         place = snapshotJson.get(JsonDataKeys.PLACE).getAsString();
         pos = new Vector3i(snapshotJson.get(JsonDataKeys.POS).getAsJsonArray().asList().stream().mapToInt(JsonElement::getAsInt).toArray());
+        xp = snapshotJson.get(JsonDataKeys.XP).getAsInt();
+        dimension = snapshotJson.get(JsonDataKeys.DIMENSION).getAsString();
     }
 
     public String Serialize()
@@ -63,6 +69,8 @@ public class InventorySnapshot {
         jsonData.add(JsonDataKeys.OFFHAND, saveStacksArray(offhand));
         jsonData.addProperty(JsonDataKeys.DATE_TIME, dateTime);
         jsonData.addProperty(JsonDataKeys.PLACE, place);
+        jsonData.addProperty(JsonDataKeys.XP, xp);
+        jsonData.addProperty(JsonDataKeys.DIMENSION, dimension);
 
         JsonArray posJson = new JsonArray(3);
         posJson.add(pos.x);

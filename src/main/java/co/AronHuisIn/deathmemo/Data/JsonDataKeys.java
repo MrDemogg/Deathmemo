@@ -9,4 +9,6 @@ public final class JsonDataKeys {
     public static String DATE_TIME = "datetime";
     public static String PLACE = "place";
     public static String POS = "pos";
+    public static String DIMENSION = "dimension";
+    public static String XP = "xp";
 }
