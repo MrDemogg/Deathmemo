@@ -25,10 +25,7 @@ public final class SlotTemplate{
 
         ItemComponent item = slot.childById(ItemComponent.class, UIKeys.SnapshotsHistory.Templates.ItemSlot.ITEM);
 
-        item.mouseEnter().subscribe(() -> {
-            item.id(UIKeys.SnapshotsHistory.Templates.ItemSlot.HOVERED_ITEM);
-
-        });
+        item.mouseEnter().subscribe(() -> item.id(UIKeys.SnapshotsHistory.Templates.ItemSlot.HOVERED_ITEM));
         item.mouseLeave().subscribe(() -> item.id(UIKeys.SnapshotsHistory.Templates.ItemSlot.ITEM));
         slot.mouseDown().subscribe((x,y,mouse) -> {
             handleSlotClick(mouse, item.stack());
