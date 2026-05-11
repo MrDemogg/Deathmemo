@@ -163,13 +163,14 @@ Commercial use of the code from this project is prohibited without the author’
 - Разработано инди-командой **AronHuisIn** (основной пакет `co.AronHuisIn.deathmemo`), разработчик VPKesha (Github: MrDemogg).
 - Использует библиотеку [owo-lib](https://github.com/wisp-forest/owo-lib) для UI-фреймворка.
 
-## Лицензия
+## Лицензия  
 
 Проект распространяется под лицензией CC BY-NC 4.0  
 Вы можете свободно использовать, менять и распространять его в соответствии с файлом лицензии.  
 Однако при распространении этого проекта или его производных требуется указание оригинального автора (VPKesha ака MrDemogg)  
 Коммерческая деятельность с использованием кода из данного проекта запрещена без разрешения автора  
-[Подробнее](https://github.com/MrDemogg/Deathmemo?tab=License-1-ov-file#readme)
+[Подробнее](https://github.com/MrDemogg/Deathmemo?tab=License-1-ov-file#readme)  
+
 ---
 
 *Нашли ошибку или есть предложение? Создайте issue в репозитории на GitHub.*  
