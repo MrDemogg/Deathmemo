@@ -113,7 +113,7 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
 
         FlowLayout dateTimesScroll = rootLayout.childById(FlowLayout.class, UIKeys.SnapshotsHistory.DATE_TIMES);
 
-        for (String dateTime : snapshots.stream().map(snapshot -> snapshot.dateTime).toList())
+        for (String dateTime : snapshots.stream().map(snapshot -> snapshot.dateTime).toList().reversed())
         {
             String date = dateTime.split("_")[0];
             String time = dateTime.split("_")[1];
