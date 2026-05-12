@@ -55,10 +55,17 @@ public final class FlatButtonTemplate {
             flatButton.mouseLeave().subscribe(() -> flatButton.surface(baseSurface));
         }
 
-        flatButton.mouseDown().subscribe((x, y, button) ->{
+        //? if <1.21.9 {
+        flatButton.mouseDown().subscribe((x, y, button) -> {
             Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 1.0f));
             return true;
         });
+        //?} else {
+        /*flatButton.mouseDown().subscribe((buttonEvent, doubled) -> {
+            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 1.0f));
+           return true;
+        });
+        *///?}
 
         return flatButton;
     }

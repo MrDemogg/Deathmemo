@@ -8,7 +8,11 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-@EventBusSubscriber(modid = Deathmemo.MODID, value = Dist.DEDICATED_SERVER)
+@EventBusSubscriber(modid = Deathmemo.MODID, value = Dist.DEDICATED_SERVER
+//? if =1.21.2 {
+/*,bus = EventBusSubscriber.Bus.MOD
+*///?}
+)
 public class ServerEventsHandler {
     @SubscribeEvent
     public static void registerPayloads(RegisterPayloadHandlersEvent event)

@@ -1,7 +1,5 @@
 package co.AronHuisIn.deathmemo.events;
 
-import co.AronHuisIn.deathmemo.Data.InventoriesDataManager;
-import co.AronHuisIn.deathmemo.Data.InventorySnapshot;
 import co.AronHuisIn.deathmemo.Deathmemo;
 import co.AronHuisIn.deathmemo.UI.Screens.SnapshotsHistoryScreen;
 import co.AronHuisIn.deathmemo.UI.Toasts.ColoredNotificationToast;
@@ -20,28 +18,36 @@ import io.wispforest.owo.ui.parsing.UIModel;
 import io.wispforest.owo.ui.parsing.UIModelLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+//? if !=1.21.2 {
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.minecraft.client.player.LocalPlayer;
 import org.joml.Vector3i;
-
+import co.AronHuisIn.deathmemo.Data.InventoriesDataManager;
+import co.AronHuisIn.deathmemo.Data.InventorySnapshot;
+import net.minecraft.client.gui.screens.DeathScreen;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+//?}
 
-@EventBusSubscriber(modid = Deathmemo.MODID, value= Dist.CLIENT)
+@EventBusSubscriber(modid = Deathmemo.MODID, value= Dist.CLIENT
+//? if =1.21.2 {
+/*,bus = EventBusSubscriber.Bus.MOD
+*///?}
+)
 public class ClientEventsHandler {
 
+    //? if !=1.21.2 {
     private static String getPlaceName()
     {
         Minecraft mc = Minecraft.getInstance();
@@ -55,6 +61,7 @@ public class ClientEventsHandler {
 
         return null;
     }
+    //?}
 
     @SubscribeEvent
     public static void registerPayloads(RegisterPayloadHandlersEvent event)
@@ -92,11 +99,18 @@ public class ClientEventsHandler {
                     );
 
                     snapshotHistoryBtn.child(texture);
+                    //? if <1.21.9 {
                     snapshotHistoryBtn.mouseDown().subscribe((x, y, mouse) ->
                     {
                         Minecraft.getInstance().setScreen(new SnapshotsHistoryScreen());
                         return true;
                     });
+                    //?} else {
+                    /*snapshotHistoryBtn.mouseDown().subscribe((btnEvent, doubled) -> {
+                        Minecraft.getInstance().setScreen(new SnapshotsHistoryScreen());
+                       return true;
+                    });
+                    *///?}
 
                     instance.adapter.rootComponent.child(snapshotHistoryBtn);
 
@@ -111,6 +125,7 @@ public class ClientEventsHandler {
                 PauseScreen.class);
     }
 
+    //? if !=1.21.2 {
     @SubscribeEvent
     public static void onClientLoggingIn(ClientPlayerNetworkEvent.LoggingIn event)
     {
@@ -139,16 +154,34 @@ public class ClientEventsHandler {
             );
         }
     }
+    //?}
 
     public static void handleRequestItemResponse(final RequestResponsePayload payload, final IPayloadContext context)
     {
-        context.enqueueWork(() -> Minecraft.getInstance().getToasts().addToast(
-                new ColoredNotificationToast(
-                        payload.message(),
-                        0xFF1D1D1D,
-                        payload.approved() ? 0xFF80FF80 : 0xFFFF8080,
-                        2000
-                )
-        ));
+        context.enqueueWork(() -> addRequestResponseToast(payload.message(), payload.approved()));
     }
+
+    //? if =1.21.1 {
+    private static void addRequestResponseToast(Component message, boolean approved)
+    {
+        Minecraft.getInstance().getToasts().addToast(
+                new ColoredNotificationToast(
+                        message,
+                        0xFF1D1D1D,
+                        approved ? 0xFF80FF80 : 0xFFFF8080,
+                        1000
+                ));
+    }
+    //?} elif >= 1.21.2 {
+    /*private static void addRequestResponseToast(Component message, boolean approved)
+    {
+        Minecraft.getInstance().getToastManager().addToast(
+                new ColoredNotificationToast(
+                        message,
+                        0xFF1D1D1D,
+                        approved ? 0xFF80FF80 : 0xFFFF8080,
+                        1000
+                ));
+    }
+    *///?}
 }

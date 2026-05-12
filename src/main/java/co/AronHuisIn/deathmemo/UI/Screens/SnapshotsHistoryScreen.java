@@ -28,9 +28,16 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3i;
+
+
+//? if >=1.21.7 {
+/*import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+*///?}
+
+//? if <=1.21.6
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +80,13 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
             if (Objects.equals(item.id(), UIKeys.SnapshotsHistory.Templates.ItemSlot.HOVERED_ITEM))
             {
                 ItemStack stack = item.stack();
-                if (!stack.isEmpty()) context.renderTooltip(this.font, stack, mouseX, mouseY);
+                if (!stack.isEmpty()) {
+                    //? if <1.21.6 {
+                    context.renderTooltip(this.font, stack, mouseX, mouseY);
+                    //?} elif >=1.21.6 {
+                    /*context.setTooltipForNextFrame(this.font, stack, mouseX, mouseY);
+                    *///?}
+                }
                 break;
             }
         }
@@ -90,10 +103,17 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
         closeBtn.surface(Surface.BLANK);
         closeBtn.sizing(Sizing.fixed(60), Sizing.fixed(20));
         closeBtn.childById(LabelComponent.class, UIKeys.SnapshotsHistory.Templates.FlatButton.BUTTON_TEXT).text(Component.translatable("gui.deathmemo.exit"));
+        //? if <1.21.9 {
         closeBtn.mouseDown().subscribe((x,y,button) -> {
             Minecraft.getInstance().setScreen(new PauseScreen(true));
             return true;
         });
+        //?} else {
+        /*closeBtn.mouseDown().subscribe((mouseButtonEvent, b) -> {
+            Minecraft.getInstance().setScreen(new PauseScreen(true));
+           return true;
+        });
+        *///?}
 
         rootLayout.childById(FlowLayout.class, UIKeys.SnapshotsHistory.CLOSE_BTN)
                 .child(closeBtn);
@@ -130,11 +150,7 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
             verticalLayout.child(Components.label(Component.literal(time)));
 
             flatButton.sizing(Sizing.fill(100), Sizing.fixed(30))
-                    .margins(Insets.top(10))
-                    .mouseDown().subscribe((x, y, button) -> {
-                        selectDate(flatButton, dateTime);
-                        return true;
-                    });
+                    .margins(Insets.top(10));
 
             FlowLayout deleteButton = FlatButtonTemplate.create(this.model, "", Surface.outline(0xFFfc7e7e));
             deleteButton.sizing(Sizing.fixed(30), Sizing.fixed(30));
@@ -147,12 +163,29 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
             );
 
             deleteButton.child(deleteTexture);
+            //? if <1.21.9 {
             deleteButton.mouseDown().subscribe((x,y,button) -> {
                 flatButton.remove();
                 InventoriesDataManager.getInstance().removeSnapshot(dateTime);
                 updateSlots(null);
                 return true;
             });
+            flatButton.mouseDown().subscribe((x, y, button) -> {
+                selectDate(flatButton, dateTime);
+                return true;
+            });
+            //?} else {
+            /*flatButton.mouseDown().subscribe((buttonEvent, doubled) -> {
+                selectDate(flatButton, dateTime);
+                return true;
+            });
+            deleteButton.mouseDown().subscribe((buttonEvent, doubled) -> {
+                flatButton.remove();
+                InventoriesDataManager.getInstance().removeSnapshot(dateTime);
+                updateSlots(null);
+                return true;
+            });
+            *///?}
 
             horizontalLayout.child(deleteButton);
 
@@ -202,26 +235,42 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
         recoveryBtn.sizing(Sizing.fixed(160), Sizing.fixed(10));
         recoveryBtn.verticalAlignment(VerticalAlignment.BOTTOM);
         recoveryBtn.horizontalAlignment(HorizontalAlignment.CENTER);
-        recoveryBtn.mouseDown().subscribe((x,y,mouse) -> {
-            handleRecovery();
-            return true;
-        });
         snapshotContainer.childById(FlowLayout.class, UIKeys.SnapshotsHistory.ITEMS_CONTAINER).child(recoveryBtn);
 
         posBtn = FlatButtonTemplate.create(this.model, "", UIKeys.SnapshotsHistory.POS_BTN, Surface.BLANK, Surface.outline(0xFFFFFFFF));
         posBtn.sizing(Sizing.content(1));
-        posBtn.mouseDown().subscribe((x,y,mouse) -> {
-            handleTP();
-            return true;
-        });
 
         xpBtn = FlatButtonTemplate.create(this.model, "", UIKeys.SnapshotsHistory.XP_BTN, Surface.BLANK, Surface.outline(0xFFFFFFFF));
         xpBtn.margins(Insets.top(10));
         xpBtn.sizing(Sizing.content(1));
+
+        //? if <1.21.9 {
+        recoveryBtn.mouseDown().subscribe((x,y,mouse) -> {
+            handleRecovery();
+            return true;
+        });
+        posBtn.mouseDown().subscribe((x,y,mouse) -> {
+            handleTP();
+            return true;
+        });
         xpBtn.mouseDown().subscribe((x,y,mouse) -> {
             handleXP();
             return true;
         });
+        //?} else {
+        /*recoveryBtn.mouseDown().subscribe((buttonEvent, doubled) -> {
+            handleRecovery();
+            return true;
+        });
+        posBtn.mouseDown().subscribe((buttonEvent, doubled) -> {
+            handleTP();
+            return true;
+        });
+        xpBtn.mouseDown().subscribe((buttonEvent, doubled) -> {
+            handleXP();
+            return true;
+        });
+        *///?}
 
         infoContainer.child(posBtn);
         infoContainer.child(xpBtn);
@@ -231,7 +280,12 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
     {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null || currentSnapshot == null) return;
+        //? if <1.21.9 {
         String playerName = player.getGameProfile().getName();
+        //?} else
+        //String playerName = player.getGameProfile().name();
+
+        //? if <1.21.7 {
         PacketDistributor.sendToServer(
                 new CommandRequestPayload("execute in " + currentSnapshot.dimension + " run tp " + playerName
                         + " " + currentSnapshot.pos.x
@@ -239,25 +293,52 @@ public class SnapshotsHistoryScreen extends BaseUIModelScreen<FlowLayout> {
                         + " " + currentSnapshot.pos.z
                 )
         );
+        //?} else {
+
+        /*ClientPacketDistributor.sendToServer(
+                new CommandRequestPayload("execute in " + currentSnapshot.dimension + " run tp " + playerName
+                        + " " + currentSnapshot.pos.x
+                        + " " + currentSnapshot.pos.y
+                        + " " + currentSnapshot.pos.z
+                )
+        );
+        *///?}
     }
 
     private void handleXP()
     {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null || currentSnapshot == null) return;
+        //? if <1.21.9 {
         String playerName = player.getGameProfile().getName();
+        //?} else
+        //String playerName = player.getGameProfile().name();
+
+        //? if <1.21.7 {
         PacketDistributor.sendToServer(
                 new CommandRequestPayload("xp add " + playerName + " " + currentSnapshot.xp + " points")
         );
+        //?} else {
+
+        /*ClientPacketDistributor.sendToServer(
+                new CommandRequestPayload("xp add " + playerName + " " + currentSnapshot.xp + " points")
+        );
+        *///?}
     }
 
     private void handleRecovery()
     {
         if (currentSnapshot == null) return;
         for (ItemStack stack : currentSnapshot.allStacks())
-            if (!stack.isEmpty()) PacketDistributor.sendToServer(
-                    new RequestItemPayload(stack)
-            );
+            if (!stack.isEmpty()) {
+                //? if <1.21.7 {
+                PacketDistributor.sendToServer(new RequestItemPayload(stack));
+                //?} else {
+                /*ClientPacketDistributor.sendToServer(
+                        new RequestItemPayload(stack)
+                );
+                *///?}
+            }
     }
 
     private void setupSlots()

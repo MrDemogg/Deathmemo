@@ -10,7 +10,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -19,7 +19,11 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-@EventBusSubscriber(modid = Deathmemo.MODID)
+@EventBusSubscriber(modid = Deathmemo.MODID
+//? if =1.21.2 {
+/*,bus = EventBusSubscriber.Bus.MOD
+*///?}
+)
 public class GeneralEventsHandler {
     @SubscribeEvent
     public static void registerPayloads(RegisterPayloadHandlersEvent event)
@@ -43,8 +47,11 @@ public class GeneralEventsHandler {
     {
         context.enqueueWork(() -> {
             ServerPlayer player = (ServerPlayer) context.player();
-            MinecraftServer server = player.getServer();
-            if (server == null) return;
+            //? if <=1.21.5 {
+            ServerLevel level = player.serverLevel();
+            //?} else
+            //ServerLevel level = player.level();
+            MinecraftServer server = level.getServer();
             Commands commands = server.getCommands();
             CommandSourceStack source = player.createCommandSourceStack();
 

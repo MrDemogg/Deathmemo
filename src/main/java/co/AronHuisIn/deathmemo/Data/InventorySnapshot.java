@@ -10,6 +10,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3i;
 
+//? if >=1.21.5 {
+/*import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+*///?}
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,9 +47,22 @@ public class InventorySnapshot {
         this.dimension = dimension;
         this.xp = xp;
 
+        //? if <=1.21.4 {
         items = Utils.copyItemStacks(inventory.items);
         offhand = Utils.copyItemStacks(inventory.offhand);
         armor = Utils.copyItemStacks(inventory.armor);
+        //?} elif >=1.21.5 {
+        /*items = Utils.copyItemStacks(inventory.getNonEquipmentItems());
+
+        Player player = inventory.player;
+        offhand = List.of(player.getItemBySlot(EquipmentSlot.OFFHAND).copy());
+        armor = List.of(
+                player.getItemBySlot(EquipmentSlot.FEET).copy(),
+                player.getItemBySlot(EquipmentSlot.LEGS).copy(),
+                player.getItemBySlot(EquipmentSlot.CHEST).copy(),
+                player.getItemBySlot(EquipmentSlot.HEAD).copy()
+        );
+        *///?}
     }
 
     public InventorySnapshot(JsonObject snapshotJson, RegistryAccess registryAccess)
