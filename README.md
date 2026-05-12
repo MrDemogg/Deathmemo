@@ -71,7 +71,7 @@ For server operators or singleplayer with cheats enabled, it also provides one�
 
 ## Credits
 
-- Developed by the indie team **AronHuisIn** (main package `co.AronHuisIn.deathmemo`), developer VPKesha (GitHub: MrDemogg).
+- Developed by the indie team **AronHuisIn**, developer VPKesha (GitHub: MrDemogg).
 - Uses the [owo-lib](https://github.com/wisp-forest/owo-lib) library for the UI framework.
 
 ## License
@@ -160,7 +160,7 @@ Commercial use of the code from this project is prohibited without the author’
 
 ## Авторство
 
-- Разработано инди-командой **AronHuisIn** (основной пакет `co.AronHuisIn.deathmemo`), разработчик VPKesha (Github: MrDemogg).
+- Разработано инди-командой **AronHuisIn**, разработчик VPKesha (Github: MrDemogg).
 - Использует библиотеку [owo-lib](https://github.com/wisp-forest/owo-lib) для UI-фреймворка.
 
 ## Лицензия  
